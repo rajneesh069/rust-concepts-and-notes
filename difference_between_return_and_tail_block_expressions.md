@@ -107,6 +107,70 @@ fn compute(x: i32) -> i32 {
 
 Both are idiomatic; the choice depends on which reads clearer for your logic.
 
+## A very good example
+
+```rust
+use std::fs::{File, read_to_string};
+use std::io::Write;
+
+fn main() {
+    let file_path = String::from("./hello.txt");
+    let file_path_str: &str = &file_path; // Create a string slice reference
+    let result = read_to_string(file_path_str);
+    match result {
+        Result::Ok(val) => println!("{}", val),
+        Result::Err(err) => {
+            println!("file not found: {}", err);
+            let mut file = match File::create(file_path_str) {
+                Result::Ok(val) => {
+                    println!("file './hello.txt' created successfully: {:?}", val);
+                    val // notice how I have not used return here, so that if the 'Ok' value matches the variable file has the file value(of type File) in it hence making the file.write_all() method to be called upon in the match expression below, if you do NOT return anything here the compiler will complain that .write_all() doesn't exist on the file variable
+                }
+                Result::Err(err) => panic!("Error creating the file './hello.txt': {}", err),
+            };
+
+            match file.write_all(b"Hello, Rust!\nThis is a new file.") {
+                Ok(_) => println!("Successfully wrote to {}", file_path_str),
+                Err(e) => eprintln!("Could not write to file {}: {}", file_path_str, e),
+            }
+        }
+    }
+}
+
+```
+
+```rust
+use std::fs::{File, read_to_string};
+use std::io::Write;
+
+fn main() {
+    let file_path = String::from("./hello.txt");
+    let file_path_str: &str = &file_path; // Create a string slice reference
+    let result = read_to_string(file_path_str);
+    match result {
+        Result::Ok(val) => println!("{}", val),
+        Result::Err(err) => {
+            println!("file not found: {}", err);
+            let mut file = match File::create(file_path_str) {
+                Result::Ok(val) => {
+                    println!("file './hello.txt' created successfully: {:?}", val);
+                    return val; // here it'll make the below `match` expression unreachable because this will exit out of the main function scope itself, and we need the file value to execute the match statement below hence we use the above concept of tail block expressions instead of literally returning the value
+                }
+                Result::Err(err) => panic!("Error creating the file './hello.txt': {}", err),
+            };
+
+            match file.write_all(b"Hello, Rust!\nThis is a new file.") {
+                Ok(_) => println!("Successfully wrote to {}", file_path_str),
+                Err(e) => eprintln!("Could not write to file {}: {}", file_path_str, e),
+            }
+        }
+    }
+}
+
+```
+
+![image](assets/1.png)
+
 ---
 
 ## 5. Under the hood: types and the diverging `!`
