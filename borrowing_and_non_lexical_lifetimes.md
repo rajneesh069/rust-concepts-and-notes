@@ -61,12 +61,15 @@ fn main() {
     let s2 = &mut str;
     s2.push_str(" Mishra");
 
-    fn2(&mut str); // This creates a mutable borrow.
+    fn2(&mut str); // ERROR: This line will start complaining, because s2 is still alive below, if it were not used again, the program won't complain!
 
-    // s2.push_str(" Another Error"); // ERROR: This line would cause a complaint!
-                                    // Because `s2` is still "alive" here,
-                                    // and you just created another mutable borrow for `fn2`.
+    s2.push_str(" Another Error"); // -> line This will cause error in the program.
+    /* Because `s2` is still "alive" here,
+     and you just created another mutable borrow for `fn2`.
+    * /
+
 }
 ```
 
+![image](/assets/2.png)
 This behavior (Non-Lexical Lifetimes) was a significant improvement to the Rust compiler in Rust 2018. It makes the borrow checker more ergonomic and less restrictive, allowing many common patterns that would previously have been compile errors. It understands that a borrow doesn't necessarily last until the end of the enclosing block, but only until the last point where the reference is actually used.
