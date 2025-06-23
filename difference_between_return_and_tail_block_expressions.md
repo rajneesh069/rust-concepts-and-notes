@@ -107,6 +107,34 @@ fn compute(x: i32) -> i32 {
 
 Both are idiomatic; the choice depends on which reads clearer for your logic.
 
+### Returning a value with just blocks
+
+```rust
+fn check() -> i32 {
+    { { { { 10 } } } }
+}
+
+/*
+fn check() -> () {
+    { { { { 10 } } } }
+}
+
+OR
+
+fn check() {
+    { { { { 10 } } } }
+}
+
+are same and they will result in an error because the return type is i32 and NOT unit type(similar to void in C/C++)
+*/
+
+fn main(){
+    println!("{:?}", check());
+}
+
+// this will return 10, when check is called
+```
+
 ## A very good example
 
 ```rust
